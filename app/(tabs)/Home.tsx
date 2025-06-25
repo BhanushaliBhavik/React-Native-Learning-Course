@@ -15,8 +15,9 @@ export default function Home() {
         style={{ padding: 10, backgroundColor: '#007BFF', borderRadius: 5 }}
         >
         <Text style={{ color: '#fff', fontSize: 16 }}>Log Out</Text>
+        
         </TouchableOpacity>
-
+        
     </View>
   )
 }

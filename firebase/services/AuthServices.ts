@@ -11,7 +11,7 @@ export const SignIn = async (email: string, password: string) => {
       password
     );
     const user = userCredential.user;
-    loginUser(user.uid); // Assuming loginUser is defined to handle user login state
+    loginUser(user); // Assuming loginUser is defined to handle user login state
     return user; // or userCredential, depending on what you want to use
   } catch (error) {
     console.error("Sign-in error:", error);
@@ -22,11 +22,13 @@ export const SignIn = async (email: string, password: string) => {
 export const SignUp = (email: string, password: string) => {
   auth
     .createUserWithEmailAndPassword(email, password)
-    .then((userCredential) => {
+    .then(async(userCredential) => {
       // Create Firestore user document
       const user = userCredential.user;
       const uid = user.uid;
-      firestore()
+      console.log("Creating user with UID:", uid);
+      
+      await firestore()
         .collection("users")
         .doc(uid)
         .set({
@@ -37,7 +39,11 @@ export const SignUp = (email: string, password: string) => {
         .then(() => {
           Alert.alert("User Created", `Welcome ${email}`);
         });
-        loginUser(uid); // Assuming loginUser is defined to handle user login state
+        console.log(user);
+        console.log(auth.currentUser);
+        
+        
+        loginUser(auth.currentUser); // Assuming loginUser is defined to handle user login state
     })
     .catch((error) => Alert.alert("Sign Up Failed", error.message));
 };

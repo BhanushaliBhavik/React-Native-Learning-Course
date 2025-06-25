@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import firestore from '@react-native-firebase/firestore';
 import { Formik } from 'formik';
-import React, { useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { FlatList, Modal, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import * as Yup from 'yup';
-import { getUserToken } from '../../firebase/services/AsyncStorage';
+import { auth } from '../../firebase/firebaseConfig'; // Adjust the import path as necessary
 
 export default function ToDo() {
     const [todos, setTodos] = useState([]); // State to hold todo items
@@ -12,6 +12,56 @@ export default function ToDo() {
     const [error, setError] = useState(null); // State to manage error state
     const [isAdding, setIsAdding] = useState(false); // State to manage adding state
     const [isEditing, setIsEditing] = useState(false); // State to manage editing state
+    const [user, setUser] = useState(null); // State to hold the current user
+
+    useEffect(() => {
+        // Function to fetch todo items from Firestore
+        const fetchTodos = async () => {
+            try {
+                const user = auth.currentUser; // Get the current user
+                console.log('Current User:', user); // Log the current user for debugging
+                
+                if (user) {
+                    setUser(user); // Set the user state
+                    const snapshot = await firestore()
+                        .collection('todo') // Ensure this matches your Firestore collection name
+                        .where('userId', '==', user.uid) // Filter todos by the current user's UID
+                        .get();
+
+                    const todosData = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data(),
+                        
+                    }));
+                    setTodos(todosData); // Set the fetched todos to state
+                    setLoading(false); // Set loading to false after fetching
+                } else {
+                    setTodos([]); // If no user, set todos to empty array
+                }
+            } catch (err) {
+                console.error('Error fetching todos:', err);
+                setError(err.message); // Set error message if fetching fails
+            } finally {
+                setLoading(false); // Set loading to false after fetching
+            }
+        };
+
+        fetchTodos(); // Call the function to fetch todos
+
+        // Optional: Listen for changes in the 'todo' collection
+        const unsubscribe = firestore()
+            .collection('todo')
+            .where('userId', '==', user ? user.uid : '')
+            .onSnapshot(snapshot => {
+                const updatedTodos = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
+                setTodos(updatedTodos); // Update todos with real-time changes
+            });
+
+        return () => unsubscribe(); // Cleanup listener on unmount
+  }, []);
 
     // Validation schema for the form
     const validationSchema = Yup.object().shape({
@@ -23,37 +73,86 @@ export default function ToDo() {
             .min(5, 'Description must be at least 5 characters'),
     });
 
-    const AddTodo =(values) => {
+    const AddTodo = async(values) => {
         // Function to add a new todo item
-        getUserToken()
-            .then( async(token) => {
+        
         try {
-            console.log('User Token:', token); // Log the user token
+            const user = auth.currentUser; // Get the current user
+            if (user) {
             await firestore()
-                .collection('users')
+                .collection('todo') // Ensure this matches your Firestore collection name
                 .add({
                     title: values.title,
                     description: values.description,
-                    user_id: token,
+                    userId: user.uid, // Use the current user's UID
                     createdAt: firestore.FieldValue.serverTimestamp(),
+                    complete: false, // Default value for new todos
                 });
+            setIsAdding(false); // Close the modal after adding
+            setTodos(prevTodos => [
+                ...prevTodos,
+                {
+                    title: values.title,
+                    description: values.description,
+                    userId: user.uid,
+                    createdAt: new Date(),
+                    complete: false, // Default value for new todos
+                },
+            ]);
+            } else {
+                alert('You must be logged in to add a todo.');
+            }
         } catch (err) {
             alert('Error adding data: ' + err.message);
         }
-            })
-            .catch((error) => {
-                console.error('Error getting user token:', error);
-                alert('Error getting user token');
-            }
-            );
+        
     }
 
+    const toggleTodoComplete = async (todoId, currentValue) => {
+        // Function to toggle the completion status of a todo item
+        try {
+            await firestore()
+                .collection('todo')
+                .doc(todoId)
+                .update({
+                    complete: !currentValue, // Toggle the current value
+                });
+            // Optionally, update the local state to reflect the change immediately
+            setTodos(prevTodos =>
+                prevTodos.map(todo =>
+                    todo.id === todoId ? { ...todo, complete: !currentValue } : todo
+                )
+            );
+        } catch (err) {
+            console.error('Error updating todo:', err);
+        }
+    }
 
     return (
         <View style={styles.container}>
-            <ScrollView contentContainerStyle={{ padding: 20 }}>
-
-            </ScrollView>
+            <FlatList
+            style={{ flex: 1 , marginTop: 20 , marginHorizontal: 10, borderRadius: 10, backgroundColor: '#fff'}}
+                data={todos}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                    <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: '#ccc', flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{flex:1, paddingRight: 10}}>
+                            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{item.title}</Text>
+                        <Text>{item.description}</Text>
+                        </View>
+                        <Switch
+                            value={item.complete}
+                            onValueChange={toggleTodoComplete.bind(null, item.id, item.complete)}
+                        />
+                    </View>
+                )}
+                ListEmptyComponent={
+                    <View style={{ padding: 20, alignItems: 'center' }}>
+                        <Text>No todos found.</Text>
+                    </View>
+                }
+                
+            />
             <TouchableOpacity
                 style={styles.addButton}
                 onPress={() => {
@@ -138,7 +237,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
 
-        backgroundColor: '#f0f0f0'
+        backgroundColor: '#ffffff'
     },
     addButton: {
         position: 'absolute',

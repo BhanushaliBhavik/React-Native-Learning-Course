@@ -35,5 +35,14 @@ export default function TabLayout() {
                 <Ionicons name="add-circle" size={24} color={color} />
   )}}
         />
+        <Tabs.Screen
+            name="Settings"
+            options={{
+            title: "Settings",
+            tabBarIcon: ({ color }) => (
+                <Ionicons name="settings" size={24} color={color} />
+            ),
+            }}
+        />
         </Tabs>  );
 }

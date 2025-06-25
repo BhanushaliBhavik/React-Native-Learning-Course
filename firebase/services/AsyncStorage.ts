@@ -1,13 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Function to log in the user
-export interface LoginUserParams {
-    token: string;
-}
 
-export const loginUser = async (token: LoginUserParams['token']): Promise<void> => {
+
+export const loginUser = async (userData): Promise<void> => {
     try {
-        await AsyncStorage.setItem('userToken', token);
+        await AsyncStorage.setItem('userToken', JSON.stringify(userData));
     } catch (error) {
         console.error('Error saving token:', error);
     }
