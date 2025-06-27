@@ -7,6 +7,9 @@ export default function App() {
   const [showCamera, setShowCamera] = useState(false);
   const [photoUri, setPhotoUri] = useState(null);
   const cameraRef = useRef(null);
+  const [cameraType, setCameraType] = useState("back");
+  const [flashMode, setFlashMode] = useState("off");
+  const [mirrorMode, setMirrorMode] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -49,11 +52,41 @@ export default function App() {
           )}
         </>
       ) : (
-        <CameraView style={styles.camera} ref={cameraRef}>
+        <CameraView style={styles.camera} ref={cameraRef} facing={cameraType} flash={flashMode} barcodeScannerSettings={{
+    barcodeTypes: ["qr"],
+  }} mirror={mirrorMode}
+>
           <View style={styles.cameraControls}>
             <TouchableOpacity onPress={takePhoto} style={styles.button}>
               <Text style={styles.buttonText}>Take Photo</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setCameraType((prevType) => (prevType === 'back' ? 'front' : 'back'));
+              }}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>Switch Camera</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                
+                setFlashMode((prevMode) => (prevMode === 'off' ? 'on' : 'off'));
+              }}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>Toggle Flash</Text>
+            </TouchableOpacity>
+            {cameraType === 'front' && (
+              <TouchableOpacity
+                onPress={() => {
+                  setMirrorMode((prevMode) => !prevMode);
+                }}
+                style={styles.button}
+              >
+                <Text style={styles.buttonText}>Toggle Mirror</Text>
+              </TouchableOpacity>
+            )}
             
           </View>
         </CameraView>

@@ -17,7 +17,6 @@ export default function LocationDemo() {
 
                     let loc = await Location.getCurrentPositionAsync({});
                     setLocation(loc);
-                    console.log(loc);
                 })();
           }
             }   
@@ -25,6 +24,9 @@ style={{ padding: 10, backgroundColor: '#007BFF', borderRadius: 5 }}
         >
           <Text style={{ color: '#fff', fontSize: 16 }}>Get Location</Text>
         </TouchableOpacity>
+        <Text style={{ marginTop: 20, fontSize: 16 }}>
+          {location ? `Latitude: ${String(location.coords.latitude)} \tLongitude: ${location.coords.longitude}` : 'No location fetched yet.'}
+        </Text>
     </View>
   )
 }

@@ -12,7 +12,7 @@ export default function Index() {
         const loggedIn = await isLoggedIn();
         if (loggedIn) {
           // User is logged in, navigate to the main app screen
-          router.replace('/Home');
+          router.replace('/(tabs)/Home');
         } else {
           // User is not logged in, navigate to the login screen
           router.replace('/LoginSignUpScreen');

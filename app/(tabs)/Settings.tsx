@@ -40,6 +40,17 @@ export default function Settings() {
             <Ionicons name="chevron-forward" size={24} color="#fff" style={{ marginLeft: 10 }} />
           </View>
         </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            router.push('../(Drawer)')
+          }}
+          style={styles.box}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={{ color: '#fff', fontSize: 16 }}>Drawer</Text>
+            <Ionicons name="chevron-forward" size={24} color="#fff" style={{ marginLeft: 10 }} />
+          </View>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   )

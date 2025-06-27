@@ -24,6 +24,11 @@ export default function RootLayout() {
           <Stack.Screen name="LoginSignUpScreen" />
           <Stack.Screen name="CameraDemo" />
           <Stack.Screen name="LocationDemo" />
+          <Stack.Screen name="(Drawer)" options={
+            {
+              headerShown: false, // Hide the header for the tabs layout
+            }
+          }/>
         </Stack>
       </SafeAreaView>
     </SafeAreaProvider>

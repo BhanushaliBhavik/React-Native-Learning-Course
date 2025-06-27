@@ -1,10 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import firestore from '@react-native-firebase/firestore';
-import { Formik } from 'formik';
 import React, { useEffect, useState } from 'react';
-import { FlatList, Modal, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as Yup from 'yup';
 import { auth } from '../../firebase/firebaseConfig'; // Adjust the import path as necessary
+
+import AddTodoComponent from '../components/AddTodoComponent';
+import DeleteTodo from '../components/DeleteTodo';
+import EditTodo from '../components/EditTodo';
 
 export default function ToDo() {
     const [todos, setTodos] = useState([]); // State to hold todo items
@@ -13,6 +16,8 @@ export default function ToDo() {
     const [isAdding, setIsAdding] = useState(false); // State to manage adding state
     const [isEditing, setIsEditing] = useState(false); // State to manage editing state
     const [user, setUser] = useState(null); // State to hold the current user
+    const [todoToEdit, setTodoToEdit] = useState(null); // State to hold the todo item being edited
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         // Function to fetch todo items from Firestore
@@ -20,18 +25,21 @@ export default function ToDo() {
             try {
                 const user = auth.currentUser; // Get the current user
                 console.log('Current User:', user); // Log the current user for debugging
-                
+
                 if (user) {
                     setUser(user); // Set the user state
+                    console.log("Feching data...");
+                    
                     const snapshot = await firestore()
                         .collection('todo') // Ensure this matches your Firestore collection name
                         .where('userId', '==', user.uid) // Filter todos by the current user's UID
                         .get();
+                    console.log(snapshot.docs.length, 'todos found'); // Log the number of todos found);
 
                     const todosData = snapshot.docs.map(doc => ({
                         id: doc.id,
                         ...doc.data(),
-                        
+
                     }));
                     setTodos(todosData); // Set the fetched todos to state
                     setLoading(false); // Set loading to false after fetching
@@ -48,20 +56,8 @@ export default function ToDo() {
 
         fetchTodos(); // Call the function to fetch todos
 
-        // Optional: Listen for changes in the 'todo' collection
-        const unsubscribe = firestore()
-            .collection('todo')
-            .where('userId', '==', user ? user.uid : '')
-            .onSnapshot(snapshot => {
-                const updatedTodos = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data(),
-                }));
-                setTodos(updatedTodos); // Update todos with real-time changes
-            });
 
-        return () => unsubscribe(); // Cleanup listener on unmount
-  }, []);
+    }, []);
 
     // Validation schema for the form
     const validationSchema = Yup.object().shape({
@@ -73,44 +69,52 @@ export default function ToDo() {
             .min(5, 'Description must be at least 5 characters'),
     });
 
-    const AddTodo = async(values) => {
+    const addTodo = async (values) => {
         // Function to add a new todo item
-        
+
         try {
             const user = auth.currentUser; // Get the current user
             if (user) {
-            await firestore()
-                .collection('todo') // Ensure this matches your Firestore collection name
-                .add({
-                    title: values.title,
-                    description: values.description,
-                    userId: user.uid, // Use the current user's UID
-                    createdAt: firestore.FieldValue.serverTimestamp(),
-                    complete: false, // Default value for new todos
-                });
-            setIsAdding(false); // Close the modal after adding
-            setTodos(prevTodos => [
-                ...prevTodos,
-                {
-                    title: values.title,
-                    description: values.description,
-                    userId: user.uid,
-                    createdAt: new Date(),
-                    complete: false, // Default value for new todos
-                },
-            ]);
+                console.log("Adding Todo...");
+                
+                await firestore()
+                    .collection('todo') // Ensure this matches your Firestore collection name
+                    .add({
+                        title: values.title,
+                        description: values.description,
+                        userId: user.uid, // Use the current user's UID
+                        createdAt: firestore.FieldValue.serverTimestamp(),
+                        complete: false, // Default value for new todos
+                    });
+                    console.log("Todo Added sucessfully!");
+                    
+                setIsAdding(false); // Close the modal after adding
+                setTodos(prevTodos => [
+                    ...prevTodos,
+                    {
+                        title: values.title,
+                        description: values.description,
+                        userId: user.uid,
+                        createdAt: new Date(),
+                        complete: false, // Default value for new todos
+                    },
+                ]);
+                // console.log(todos);
+                
             } else {
                 alert('You must be logged in to add a todo.');
             }
         } catch (err) {
             alert('Error adding data: ' + err.message);
         }
-        
+
     }
 
     const toggleTodoComplete = async (todoId, currentValue) => {
         // Function to toggle the completion status of a todo item
         try {
+            console.log("Toggle Todo Complete: ", todoId);
+            
             await firestore()
                 .collection('todo')
                 .doc(todoId)
@@ -118,6 +122,8 @@ export default function ToDo() {
                     complete: !currentValue, // Toggle the current value
                 });
             // Optionally, update the local state to reflect the change immediately
+            console.log("Toogle Todo sucessfully!");
+            
             setTodos(prevTodos =>
                 prevTodos.map(todo =>
                     todo.id === todoId ? { ...todo, complete: !currentValue } : todo
@@ -128,31 +134,97 @@ export default function ToDo() {
         }
     }
 
+    const editTodo = async (values) => {
+        // Function to edit an existing todo item
+        try {
+            if (todoToEdit) {
+                console.log('Editing todo:', todoToEdit);
+
+                await firestore()
+                    .collection('todo')
+                    .doc(todoToEdit.id)
+                    .update({
+                        title: values.title,
+                        description: values.description,
+                    });
+                    console.log("Edit Todo sucessfully!");
+                    
+                setIsEditing(false); // Close the modal after editing
+                setTodos(prevTodos =>
+                    prevTodos.map(todo =>
+                        todo.id === todoToEdit.id ? { ...todo, title: values.title, description: values.description } : todo
+                    )
+                );
+            }
+        } catch (err) {
+            alert('Error updating todo: ' + err.message);
+        }
+    }
+
+    const deleteTodo = async (todoId) => {
+        try{
+            console.log("Deleting Todo: ", todoId);
+            
+            await firestore()
+            .collection("todo")
+            .doc(todoId)
+            .delete();
+            console.log("Todo Delete Sucessfully!");
+            
+        setIsDeleting(false); // Close the modal after editing
+        setTodos(prevTodos =>
+            prevTodos.filter(todo =>
+                todo.id !== todoId
+            )
+        );
+
+        } catch(e){
+            alert("Error During Deletion:" + e.message)
+        }
+    }
+
     return (
         <View style={styles.container}>
-            <FlatList
-            style={{ flex: 1 , marginTop: 20 , marginHorizontal: 10, borderRadius: 10, backgroundColor: '#fff'}}
+            {loading ? <ActivityIndicator
+                size="large"
+                color="#0000ff"
+                style={styles.loader}
+            /> : <FlatList
+                style={{ flex: 1, marginTop: 20, marginHorizontal: 10, borderRadius: 10, backgroundColor: '#fff' }}
                 data={todos}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                    <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: '#ccc', flexDirection: 'row', alignItems: 'center' }}>
-                        <View style={{flex:1, paddingRight: 10}}>
-                            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{item.title}</Text>
-                        <Text>{item.description}</Text>
+                    <Pressable onLongPress={() => {
+                        setTodoToEdit(item)
+                        setIsDeleting(true)
+                    }}>
+                        <View style={{ padding: 20, borderBottomWidth: 1, borderBottomColor: '#ccc', flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                            <Ionicons name={item.complete ? "checkmark-circle" : "ellipse-outline"} size={24} color={item.complete ? "#4CAF50" : "#ccc"} onPress={() => { toggleTodoComplete(item.id, item.complete) }} />
+                            <View style={{ flex: 1, paddingRight: 10 }}>
+                                <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{item.title}</Text>
+                                <Text>{item.description}</Text>
+                            </View>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    // Handle edit action here
+                                    console.log('Edit todo:', item);
+                                    setTodoToEdit(item); // Set the todo to edit
+                                    setIsEditing(true);
+                                }}
+                                style={{ padding: 10, backgroundColor: '#007BFF', borderRadius: 5 }}
+                            >
+                                <Text style={{ color: '#fff' }}>Edit</Text>
+                            </TouchableOpacity>
                         </View>
-                        <Switch
-                            value={item.complete}
-                            onValueChange={toggleTodoComplete.bind(null, item.id, item.complete)}
-                        />
-                    </View>
+                    </Pressable>
                 )}
                 ListEmptyComponent={
                     <View style={{ padding: 20, alignItems: 'center' }}>
                         <Text>No todos found.</Text>
                     </View>
                 }
-                
-            />
+
+            />}
             <TouchableOpacity
                 style={styles.addButton}
                 onPress={() => {
@@ -162,72 +234,24 @@ export default function ToDo() {
                 <Text style={styles.addButtonText}>+</Text>
 
             </TouchableOpacity>
-            <Modal
-                visible={isAdding}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => {
-                    setIsAdding(false);
 
-                }}
-            >
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-                    <View style={{ width: '80%', backgroundColor: '#fff', padding: 20, borderRadius: 10 }}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }} >
-                            <Text style={{ fontSize: 18 }}>Add Todo</Text>
-                            <TouchableOpacity
-                                onPress={() => setIsAdding(false)}
+            {isAdding && <AddTodoComponent
+                addTodo={addTodo}
+                close={() => setIsAdding(false)}
+                isAdding={isAdding} />}
 
-                            >
-                                <Ionicons name="close" size={24} color="black" style={{ paddingHorizontal: 5, paddingVertical: 3 }} />
-                            </TouchableOpacity>
-                        </View>
-                        {/* Add your form for adding/editing todo here */}
-                        <Formik
-                            initialValues={{ title: '', description: '' }}
-                            validationSchema={validationSchema}
-                            onSubmit={(values, { resetForm }) => {
-                                AddTodo(values); // Call the function to add todo
-                                console.log('Submitted:', values);
-
-                                resetForm(); // Reset the form
-                                setIsAdding(false); // Close the modal
-                            }}
-                        >
-                            {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
-                                <View>
-                                    <Text>Title</Text>
-                                    <TextInput
-                                        onChangeText={handleChange('title')}
-                                        onBlur={handleBlur('title')}
-                                        value={values.title}
-                                        placeholder="Enter title"
-                                        style={{ borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 10 }}
-                                    />
-                                    {errors.title && <Text style={{ color: 'red' }}>{errors.title}</Text>}
-
-                                    <Text>Description</Text>
-                                    <TextInput
-                                        onChangeText={handleChange('description')}
-                                        onBlur={handleBlur('description')}
-                                        value={values.description}
-                                        placeholder="Enter description"
-                                        style={{ borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 10 }}
-                                    />
-                                    {errors.description && <Text style={{ color: 'red' }}>{errors.description}</Text>}
-
-                                    <TouchableOpacity
-                                        onPress={() => handleSubmit()}
-                                        style={{ backgroundColor: '#007BFF', padding: 15, borderRadius: 5 }}
-                                    >
-                                        <Text style={{ color: '#fff', textAlign: 'center' }}>Submit</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            )}
-                        </Formik>
-                    </View>
-                </View>
-            </Modal>
+            {isEditing && <EditTodo
+                isEditing={isEditing}
+                close={() => setIsEditing(false)}
+                todo={todoToEdit}
+                editTodo={editTodo}
+            />}
+            {isDeleting && <DeleteTodo
+                todoId={todoToEdit.id}
+                close={() => setIsDeleting(false)}
+                deleteTodo={deleteTodo}
+                isDeleting={isDeleting}
+            />}
 
         </View>
     )
@@ -258,5 +282,8 @@ const styles = StyleSheet.create({
     addButtonText: {
         color: '#fff', fontSize: 24,
         padding: 15, borderRadius: 50
+    },
+    loader: {
+        marginVertical: 20,
     }
 })
