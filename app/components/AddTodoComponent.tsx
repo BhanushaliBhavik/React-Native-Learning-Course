@@ -4,7 +4,7 @@ import React from 'react';
 import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import * as Yup from 'yup';
 
-const AddTodo = ({ isAdding, addTodo, close }) => {
+const AddTodoComponent = ({ isAdding, addTodo, close }) => {
     const validationSchema = Yup.object().shape({
         title: Yup.string()
             .required('Title is required')
@@ -82,5 +82,5 @@ const AddTodo = ({ isAdding, addTodo, close }) => {
     )
 }
 
-export default AddTodo;
+export default AddTodoComponent;
 const styles = StyleSheet.create({})

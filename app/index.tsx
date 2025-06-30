@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Image, View } from 'react-native';
 import { isLoggedIn } from '../firebase/services/AsyncStorage';
+
 
 export default function Index() {
   const router = useRouter();
