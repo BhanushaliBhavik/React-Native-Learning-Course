@@ -11,9 +11,9 @@ export default function Settings() {
           onPress={() => {
             router.push('../CameraDemo')
           }}
-          style={styles.box}
+          className='p-2.5 bg-blue-600 rounded-md m-2.5 py-5'
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View className='flex-row items-center justify-between' >
             <Text style={{ color: '#fff', fontSize: 16 }}>Camera</Text>
             <Ionicons name="chevron-forward" size={24} color="#fff" style={{ marginLeft: 10 }} />
           </View>
@@ -22,9 +22,9 @@ export default function Settings() {
           onPress={() => {
             router.push('../LocationDemo')
           }}
-          style={styles.box}
+         className='p-2.5 bg-blue-600 rounded-md m-2.5 py-5'
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View className='flex-row items-center justify-between'>
             <Text style={{ color: '#fff', fontSize: 16 }}>Location</Text>
             <Ionicons name="chevron-forward" size={24} color="#fff" style={{ marginLeft: 10 }} />
           </View>
@@ -33,9 +33,9 @@ export default function Settings() {
           onPress={() => {
             router.push('../NotificationDemo')
           }}
-          style={styles.box}
+          className='p-2.5 bg-blue-600 rounded-md m-2.5 py-5'
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View className='flex-row items-center justify-between'>
             <Text style={{ color: '#fff', fontSize: 16 }}>Notifications</Text>
             <Ionicons name="chevron-forward" size={24} color="#fff" style={{ marginLeft: 10 }} />
           </View>
@@ -44,9 +44,9 @@ export default function Settings() {
           onPress={() => {
             router.push('../(Drawer)')
           }}
-          style={styles.box}
+          className='p-2.5 bg-blue-600 rounded-md m-2.5 py-5'
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View className='flex-row items-center justify-between'>
             <Text style={{ color: '#fff', fontSize: 16 }}>Drawer</Text>
             <Ionicons name="chevron-forward" size={24} color="#fff" style={{ marginLeft: 10 }} />
           </View>
@@ -58,7 +58,5 @@ export default function Settings() {
 
 const styles = StyleSheet.create({
     container:{},
-    box:{
-         padding: 10, backgroundColor: '#007BFF', borderRadius: 5, margin: 10 , paddingVertical:20
-    }
+    box:{}
 })

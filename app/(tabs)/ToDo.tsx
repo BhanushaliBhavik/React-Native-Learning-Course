@@ -188,9 +188,9 @@ export default function ToDo() {
             {loading ? <ActivityIndicator
                 size="large"
                 color="#0000ff"
-                style={styles.loader}
+                className='my-5'
             /> : <FlatList
-                style={{ flex: 1, marginTop: 20, marginHorizontal: 10, borderRadius: 10, backgroundColor: '#fff' }}
+                className='flex-1 mt-5 mx-2.5 rounded-xl bg-white pb-14'
                 data={todos}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
@@ -226,12 +226,12 @@ export default function ToDo() {
 
             />}
             <TouchableOpacity
-                style={styles.addButton}
+                className='absolute bottom-5 right-5 w-16 h-16 justify-center items-center rounded-full elevation-md shadow-slate-700 bg-blue-500'
                 onPress={() => {
                     setIsAdding(true);
                 }}
             >
-                <Text style={styles.addButtonText}>+</Text>
+                <Text className='color-white text-2xl '>+</Text>
 
             </TouchableOpacity>
 

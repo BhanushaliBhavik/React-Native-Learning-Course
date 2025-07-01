@@ -4,16 +4,16 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { SignOut } from '../../firebase/services/AuthServices';
 export default function Home() {
   return (
-    <View className="flex-1 justify-center" >
-      <Text className='bg-red-600 '>Home</Text>
+    <View className="flex-1 justify-center items-center" >
+      <Text className='text-3xl'>Home</Text>
       <TouchableOpacity
         onPress={() => {
           SignOut();
           router.replace("/LoginSignUpScreen");
         }}
-        style={{ padding: 10, backgroundColor: '#007BFF', borderRadius: 5 }}
+        className='bg-purple-400 px-3 py-2 rounded-xl'
       >
-        <Text style={{ color: '#fff', fontSize: 16 }}>Log Out</Text>
+        <Text className='color-black text-2xl font-bold' >Log Out</Text>
 
       </TouchableOpacity>
       
