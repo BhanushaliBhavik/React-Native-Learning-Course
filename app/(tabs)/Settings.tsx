@@ -51,6 +51,17 @@ export default function Settings() {
             <Ionicons name="chevron-forward" size={24} color="#fff" style={{ marginLeft: 10 }} />
           </View>
         </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            router.push('../Temp')
+          }}
+          className='p-2.5 bg-blue-600 rounded-md m-2.5 py-5'
+        >
+          <View className='flex-row items-center justify-between'>
+            <Text style={{ color: '#fff', fontSize: 16 }}>Temp</Text>
+            <Ionicons name="chevron-forward" size={24} color="#fff" style={{ marginLeft: 10 }} />
+          </View>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   )

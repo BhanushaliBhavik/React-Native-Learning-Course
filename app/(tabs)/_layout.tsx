@@ -17,32 +17,36 @@ export default function TabLayout() {
           shadowOpacity: 0,
           shadowRadius: 0,
         },
-      }}>
-        <Tabs.Screen
-            name="Home"
-            options={{
-            title: "Home",
-            tabBarIcon: ({ color }) => (
-                <Ionicons name="home" size={24} color={color} />
-            ),
-            }}              
-        />
-        <Tabs.Screen
-            name="ToDo"
-            options={{
-            title: "To-Do",
-            tabBarIcon: ({ color }) => (
-                <Ionicons name="add-circle" size={24} color={color} />
-  )}}
-        />
-        <Tabs.Screen
-            name="Settings"
-            options={{
-            title: "Settings",
-            tabBarIcon: ({ color }) => (
-                <Ionicons name="settings" size={24} color={color} />
-            ),
-            }}
-        />
-        </Tabs>  );
+      }}
+    >
+      <Tabs.Screen
+        name="Home"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="home" size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="ToDo"
+        options={{
+          title: "To-Do",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="add-circle" size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="Settings"
+        options={{
+          title: "Settings",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="settings" size={24} color={color} />
+          ),
+        }}
+      />
+      
+    </Tabs>
+  );
 }

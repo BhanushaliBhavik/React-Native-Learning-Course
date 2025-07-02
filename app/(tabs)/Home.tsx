@@ -2,6 +2,8 @@ import { router } from 'expo-router';
 import * as React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { SignOut } from '../../firebase/services/AuthServices';
+// import Counter from "../mobex/Counter";
+import Counter from "../zustand/Counter";
 export default function Home() {
   return (
     <View className="flex-1 justify-center items-center" >
@@ -17,6 +19,8 @@ export default function Home() {
 
       </TouchableOpacity>
       
+      <Counter />
+      {/* <Counter /> */}
 
     </View>
   )
